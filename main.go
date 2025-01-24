@@ -12,8 +12,8 @@ import (
 )
 
 type UnaggregatedFlowModel struct {
-	DeviceName string `json:"DeviceName,omitempty"`
-	StartTime  string `json:"StartTime,omitempty"`
+	DeviceProduct string `json:"DeviceProduct,omitempty"`
+	StartTime     string `json:"StartTime,omitempty"`
 }
 
 func parseTime(s string) time.Time {
@@ -32,8 +32,19 @@ var broker = flag.String("b", "", "broker")
 var partition = flag.Int("p", 0, "partition")
 var messages = flag.Int("n", 1, "number of messages")
 
+func check[T any](t *T, what string) {
+	if t == nil {
+		panic(fmt.Sprintf("%v must be set", what))
+	}
+}
+
 func main() {
 	flag.Parse()
+
+	check(password, "connection string (-c)")
+	check(topic, "topic (-t)")
+	check(broker, "broker (-b)")
+	check(partition, "partition (-p)")
 
 	config := sarama.NewConfig()
 	config.Net.SASL.Enable = true
@@ -85,6 +96,7 @@ func main() {
 
 	stat := NewStats()
 
+	fmt.Printf("Checking last %v messages in partition %v of topic %v\n", *messages, *partition, *topic)
 	read := 0
 	for msg := range pc.Messages() {
 		var f UnaggregatedFlowModel
@@ -93,7 +105,7 @@ func main() {
 			panic(err)
 		}
 		t := parseTime(f.StartTime)
-		stat.process(t, f.DeviceName != "")
+		stat.process(t, f.DeviceProduct != "")
 		read++
 		if read%10000 == 0 {
 			fmt.Print(".")
@@ -107,6 +119,5 @@ func main() {
 	cl.Close()
 
 	fmt.Println("\n", stat.String())
-	fmt.Println("ending..")
 	wg.Wait()
 }

@@ -76,7 +76,7 @@ func (h *Histogram[T]) Describe() string {
 	buckVal := h.buckets[len(h.buckets)-1] - pb
 	nx := float32(w) / float32(mx) * float32(buckVal)
 	for range int(nx) {
-		fmt.Fprintln(&sb, "#")
+		fmt.Fprint(&sb, "#")
 	}
 	fmt.Fprintln(&sb, "\t", buckVal)
 	return sb.String()
