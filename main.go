@@ -71,7 +71,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%#v\n", offset)
 
 	c, err := sarama.NewConsumerFromClient(cl)
 	if err != nil {

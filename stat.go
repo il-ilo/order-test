@@ -156,7 +156,7 @@ func (s *stats) process(t time.Time, pa bool) {
 
 func (s *statItem) String() string {
 	return fmt.Sprintf("total: %09d, delayed: %09d (%g%%), min: %v, max: %v\n%v",
-		s.samples, s.delayed, 100.*float32(s.delayed)/float32(s.samples), s.min, s.max, s.hist.Describe())
+		s.samples, s.delayed, 100.0*float32(s.delayed)/float32(s.samples), s.min, s.max, s.hist.Describe())
 }
 
 func (s *statItem) process(delay time.Duration) {
