@@ -35,6 +35,7 @@ type AggregatedState struct {
 }
 
 func (s *AggregatedState) Apply(f Flow) {
+	mismatch := false
 	if f.DeviceProduct != "" {
 		s.HavePa = true
 	} else {
@@ -50,13 +51,20 @@ func (s *AggregatedState) Apply(f Flow) {
 	}
 
 	if s.SourceMACAddress != f.SourceMACAddress {
+		mismatch = true
 		fmt.Printf("src MAC mismatch: %v != %v\n", s.SourceMACAddress, f.SourceMACAddress)
 	}
 	if s.DestinationMACAddress != f.DestinationMACAddress {
+		mismatch = true
 		fmt.Printf("dst MAC mismatch: %v != %v\n", s.DestinationMACAddress, f.DestinationMACAddress)
 	}
 	if s.TrafficStatus != f.TrafficStatus {
+		mismatch = true
 		fmt.Printf("status mismatch: %v != %v\n", s.TrafficStatus, f.TrafficStatus)
+	}
+
+	if mismatch {
+		fmt.Printf("mismatch: %+v vs %+v\n", s, f)
 	}
 
 	s.SentBytes += f.SentBytes
@@ -92,8 +100,8 @@ func (s *State) Process(f Flow) {
 	valForWin, have := valForKey[st]
 	if !have {
 		valForWin = &AggregatedState{
-			HaveAz:                false,
-			HavePa:                false,
+			HaveAz:                f.DeviceProduct == "",
+			HavePa:                f.DeviceProduct != "",
 			StartTime:             st,
 			EndTime:               parseTime(f.EndTime),
 			SrcIP:                 f.SrcIP,
@@ -118,14 +126,16 @@ func (s *State) Process(f Flow) {
 
 func (s *State) Describe(f io.Writer) {
 	for k, v := range s.Data {
+		fmt.Fprintln(f, "###########################################################")
 		fmt.Fprintf(f, "%v:\n", k)
 		for w, vv := range v {
-			fmt.Fprintf(f, "%v:\n", w.Format(time.RFC3339))
+			fmt.Fprintf(f, "%v to %v:\n", w.Format(time.RFC3339), w.Add(time.Hour).Format(time.RFC3339))
 			o, err := json.MarshalIndent(vv, "  ", "  ")
 			if err != nil {
 				panic(err)
 			}
 			fmt.Fprintf(f, "%v\n", string(o))
 		}
+		fmt.Fprint(f, "###########################################################\n\n")
 	}
 }
