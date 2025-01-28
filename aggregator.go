@@ -32,6 +32,7 @@ type AggregatedState struct {
 	PacketsReceived int64  `json:"PacketsReceived,omitempty"`
 	TrafficStatus   string `json:"TrafficStatus,omitempty"`
 	FlowCount       int64  `json:"FlowCount,omitempty"`
+	Offsets         []int64
 }
 
 func (s *AggregatedState) Apply(f Flow) {
@@ -72,6 +73,7 @@ func (s *AggregatedState) Apply(f Flow) {
 	s.PacketsSent += f.PacketsSent
 	s.PacketsReceived += f.PacketsReceived
 	s.FlowCount++
+	s.Offsets = append(s.Offsets, f.Offset)
 }
 
 type State struct {
