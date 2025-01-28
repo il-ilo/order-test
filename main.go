@@ -28,6 +28,7 @@ type Flow struct {
 	PacketsSent           int64  `json:"PacketsSent,omitempty"`
 	PacketsReceived       int64  `json:"PacketsReceived,omitempty"`
 	TrafficStatus         string `json:"TrafficStatus,omitempty"`
+	Offset                int64
 }
 
 func (m *Flow) Key() string {
@@ -124,6 +125,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		f.Offset = msg.Offset
 		t := parseTime(f.StartTime)
 		stat.process(t, f.DeviceProduct != "")
 		read++
